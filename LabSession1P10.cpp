@@ -15,8 +15,8 @@ int main(){
     cout << "Enter c : " << endl;
     cin >> c;
 
-    root1 = (((-1)*b) + sqrt((b^2) - (4*a*c)))/(2*a);
-    root2 = (((-1)*b) - sqrt((b^2) - (4*a*c)))/(2*a);
+    root1 = (((-1)*b) + sqrt((b*b) - (4*a*c)))/(2*a);
+    root2 = (((-1)*b) - sqrt((b*b) - (4*a*c)))/(2*a);
 
     cout << "First root : " << root1 << endl;
     cout << "Second root : " << root2 << endl;

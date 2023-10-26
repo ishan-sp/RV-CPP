@@ -3,9 +3,9 @@ using namespace std;
 int num1;
 int num2;
 int main(){
-    cout << "Enter the first number: ";
+    cout << "Enter the first number : ";
     cin >> num1;
-    cout << "Enter the second number";
+    cout << "Enter the second number : ";
     cin >> num2;
     cout << "The sum of the two numbers entered is  : " << num1 + num2;
 

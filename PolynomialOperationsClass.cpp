@@ -74,6 +74,7 @@ polynomial operator+(const polynomial& a, const polynomial& b) {
             temp.addTerm(termB.coeff, termB.exp);
         }
     }
+    return temp;
 }
 
 polynomial operator-(const polynomial&a, const polynomial&b) {
@@ -107,6 +108,27 @@ polynomial operator-(const polynomial&a, const polynomial&b) {
 }
 
 
+polynomial operator*(const polynomial a, const polynomial b) {
+    polynomial temp;
+        unordered_map<int, int> map1;
+    for (const auto&termA : a.terms_vector) {
+        for (const auto&termB : b.terms_vector) {
+            int coeff_result = termA.coeff * termB.coeff;
+            int exp_result = termA.exp * termB.exp;
+            if (map1.find(exp_result) != map1.end()) {
+                map1[exp_result] += coeff_result;
+            }
+            else {
+                map1[exp_result] = coeff_result;
+            }
+            }
+        }
+        for(const auto& pair : map1) {
+            temp.addTerm(pair.second, pair.first);
+        }
+        return temp;
+    }
+
 int main() {
     polynomial p1;
     p1.addTerm(5, 3);
@@ -116,7 +138,7 @@ int main() {
     p2.addTerm(10, 1);
     p2.addTerm(1, 2);
     polynomial p3;
-    p3 = p1 + p2;
+    p3 = p1 * p2;
     p3.displaypoly();
 
     return 0;

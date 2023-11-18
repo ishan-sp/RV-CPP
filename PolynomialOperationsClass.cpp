@@ -14,6 +14,9 @@ class polynomial {
         vector<terms> terms_vector;
         void addTerm(int c, int e);
         void displaypoly(void);
+        friend polynomial operator+(const polynomial& a, const polynomial& b);
+        friend polynomial operator-(const polynomial& a, const polynomial& b);
+        friend polynomial operator*(const polynomial a, const polynomial b);
 };
 
 void polynomial :: displaypoly(void) {
@@ -129,6 +132,22 @@ polynomial operator*(const polynomial a, const polynomial b) {
         return temp;
     }
 
+/*polynomial operator<<(const polynomial a) {
+    polynomial temp;
+    int no_terms;
+    cout << "Enter the number of terms ";
+    cin >> no_terms;
+    for (int i = 0; i = no_terms; i++) {
+        int c, e;
+        cout << "Enter the coefficient ";
+        cin >> c;
+        cout << endl << "Enter the exponent ";
+        cin >> e;
+        temp.addTerm(c, e);
+    }
+    return temp;
+}
+*/
 int main() {
     polynomial p1;
     p1.addTerm(5, 3);

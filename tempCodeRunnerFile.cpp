@@ -1,50 +1,53 @@
-#include<iostream>
-#include<string>
-#include<vector>
-using namespace std;
+#include <iostream>
+#include <cmath>
 
-
-class shop{
-private:
-    int cnum;
-    int price;
-    string name;
+class Shape {
 public:
-    shop(int codenum, int cost, string item_name) {
-        this->cnum = codenum;
-        this->price = cost;
-        this->name = item_name;
+    virtual void readDimensions() = 0;
+    virtual void computeArea() const = 0;
+    virtual ~Shape() {}
+};
+
+class Rectangle : public Shape {
+private:
+    float length;
+    float breadth;
+
+public:
+    void readDimensions() override {
+        std::cout << "Enter the length and breadth: ";
+        std::cin >> length >> breadth;
     }
-    int getcode(){
-        int code_number = this->cnum;
-        return code_number;
+
+    void computeArea() const override {
+        std::cout << "Area is " << length * breadth << std::endl;
     }
 };
 
-void addItem(vector<shop>& shopVector, const shop& obj){
-    shopVector.push_back(obj);
+class Circle : public Shape {
+private:
+    float radius;
 
-}
-void delItem(vector<shop>& shopVector) {
-    int cnum;
-    cout << "Enter the code number";
-    cin >> cnum;
-    for(int j = 0; j < shopVector.size(); j++)  {
-        if (shopVector[j].getcode() == cnum)
-            shopVector.erase(shopVector.begin() + j);
+public:
+    void readDimensions() override {
+        std::cout << "Enter the radius: ";
+        std::cin >> radius;
     }
-}
+
+    void computeArea() const override {
+        std::cout << "Area is " << M_PI * std::pow(radius, 2) << std::endl;
+    }
+};
+
 int main() {
-    vector<shop> v1;
-    shop o1(293,44,"ParleG");
-    addItem(v1, o1);
-    delItem(v1);
-    if (v1.empty())
-        cout << "Empty";
-    else {
-        for(int j = 0; j< v1.size(); j++) {
-            cout << &(v1[j]); }
-    }
+    Rectangle rectangle;
+    rectangle.readDimensions();
+    rectangle.computeArea();
+
+    Circle circle;
+    circle.readDimensions();
+    circle.computeArea();
 
     return 0;
 }
+

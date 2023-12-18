@@ -28,6 +28,7 @@ void polynomial :: displaypoly(void) {
             cout << terms_vector[i].coeff << "x^" << terms_vector[i].exp;
         }
     }
+    cout << endl;
 }
 
 void polynomial :: addTerm(int c, int e) {
@@ -132,33 +133,39 @@ polynomial operator*(const polynomial a, const polynomial b) {
         return temp;
     }
 
-/*polynomial operator<<(const polynomial a) {
-    polynomial temp;
-    int no_terms;
-    cout << "Enter the number of terms ";
-    cin >> no_terms;
-    for (int i = 0; i = no_terms; i++) {
-        int c, e;
-        cout << "Enter the coefficient ";
-        cin >> c;
-        cout << endl << "Enter the exponent ";
-        cin >> e;
-        temp.addTerm(c, e);
+istream& operator>>(istream& in, polynomial& poly) {
+    int numTerms;
+    cout << "Enter the number of terms: ";
+    in >> numTerms;
+
+    for (int i = 0; i < numTerms; i++) {
+        int coeff, exp;
+        cout << "Enter coefficient and exponent for term " << i + 1 << ": ";
+        in >> coeff >> exp;
+        poly.addTerm(coeff, exp);
     }
-    return temp;
+    return in;
 }
-*/
+
+ostream& operator<<(ostream& out, polynomial &poly) {
+    poly.displaypoly();
+    return out;
+}
+
 int main() {
-    polynomial p1;
+    polynomial p1, p2, p3, p4, p5;
     p1.addTerm(5, 3);
     p1.addTerm(2, 1);
-    polynomial p2;
     p2.addTerm(6, 3);
     p2.addTerm(10, 1);
     p2.addTerm(1, 2);
-    polynomial p3;
     p3 = p1 * p2;
-    p3.displaypoly();
+    cout << p3;
+    p4 = p2-p1;
+    cout << p4;
+    cout << p1;
+    cin >> p5;
+    cout << p5;
 
     return 0;
 }

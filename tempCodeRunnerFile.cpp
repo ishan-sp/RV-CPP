@@ -1,53 +1,25 @@
 #include <iostream>
-#include <cmath>
+using namespace std;
 
-class Shape {
+class Base {
+private:
+    int x;
 public:
-    virtual void readDimensions() = 0;
-    virtual void computeArea() const = 0;
-    virtual ~Shape() {}
+    Base(int i) : x(i) {}
+
+    // Friend declaration for the derived class
+    friend class Derived;
 };
 
-class Rectangle : public Shape {
-private:
-    float length;
-    float breadth;
-
+class Derived : private Base {
 public:
-    void readDimensions() override {
-        std::cout << "Enter the length and breadth: ";
-        std::cin >> length >> breadth;
-    }
-
-    void computeArea() const override {
-        std::cout << "Area is " << length * breadth << std::endl;
-    }
-};
-
-class Circle : public Shape {
-private:
-    float radius;
-
-public:
-    void readDimensions() override {
-        std::cout << "Enter the radius: ";
-        std::cin >> radius;
-    }
-
-    void computeArea() const override {
-        std::cout << "Area is " << M_PI * std::pow(radius, 2) << std::endl;
+    Derived(int i) : Base(i) {
+        // Derived class can access the private member x of Base
+        cout << "Derived accessing private member x: " << x << endl;
     }
 };
 
 int main() {
-    Rectangle rectangle;
-    rectangle.readDimensions();
-    rectangle.computeArea();
-
-    Circle circle;
-    circle.readDimensions();
-    circle.computeArea();
-
+    Derived derivedObj(42);
     return 0;
 }
-

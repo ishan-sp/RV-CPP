@@ -1,5 +1,6 @@
 #include<iostream>
 #include<vector>
+#include<cmath>
 #include <unordered_map>
 using namespace std;
 
@@ -14,9 +15,11 @@ class polynomial {
         vector<terms> terms_vector;
         void addTerm(int c, int e);
         void displaypoly(void);
+        void computeValue(int b);
+        polynomial& operator=(const polynomial &other);
         friend polynomial operator+(const polynomial& a, const polynomial& b);
         friend polynomial operator-(const polynomial& a, const polynomial& b);
-        friend polynomial operator*(const polynomial a, const polynomial b);
+        friend polynomial operator*(const polynomial& a, const polynomial& b);
 };
 
 void polynomial :: displaypoly(void) {
@@ -36,6 +39,14 @@ void polynomial :: addTerm(int c, int e) {
     newterm.coeff = c;
     newterm.exp = e;
     terms_vector.push_back(newterm);
+}
+
+void polynomial :: computeValue(int b) {
+    int sum = 0;
+    for (const auto &term : terms_vector) {
+        sum = sum + term.coeff * pow(b, term.exp);
+    }
+    cout << "The value is " << sum << endl;
 }
 
 polynomial operator+(const polynomial& a, const polynomial& b) {
@@ -89,7 +100,7 @@ polynomial operator-(const polynomial&a, const polynomial&b) {
 
         for(const auto& termB : b.terms_vector) {
             if(termA.exp == termB.coeff)  {
-                temp.addTerm(termA.coeff + termB.coeff, termA.exp);
+                temp.addTerm(termA.coeff - termB.coeff, termA.exp);
 
                 foundMatch = true;
                 break;
@@ -99,26 +110,30 @@ polynomial operator-(const polynomial&a, const polynomial&b) {
             temp.addTerm(termA.coeff, termA.exp);
     }
     }
-        for (const auto& termB : b.terms_vector) {
+    for (const auto& termB : b.terms_vector) {
         bool foundMatch = false;
         for (const auto&termA : a.terms_vector) {
             if (termA.coeff == termB.coeff) {
                 temp.addTerm(termA.coeff - termB.coeff, termB.exp);
                 foundMatch = true;
+                break;
             }
+        }
+    if (!foundMatch) {
+        temp.addTerm(termB.coeff, termB.exp);
         }
     }
     return temp;
 }
 
 
-polynomial operator*(const polynomial a, const polynomial b) {
+polynomial operator*(const polynomial& a, const polynomial& b) {
     polynomial temp;
-        unordered_map<int, int> map1;
+    unordered_map<int, int> map1;
     for (const auto&termA : a.terms_vector) {
         for (const auto&termB : b.terms_vector) {
             int coeff_result = termA.coeff * termB.coeff;
-            int exp_result = termA.exp * termB.exp;
+            int exp_result = termA.exp + termB.exp;
             if (map1.find(exp_result) != map1.end()) {
                 map1[exp_result] += coeff_result;
             }
@@ -132,6 +147,18 @@ polynomial operator*(const polynomial a, const polynomial b) {
         }
         return temp;
     }
+    
+polynomial& polynomial::operator=(const polynomial& other) {
+    if (this != &other) {
+        // Clear current terms_vector to avoid memory leaks
+        terms_vector.clear();
+
+        // Copy terms from other polynomial
+        terms_vector = other.terms_vector;
+    }
+
+    return *this;
+}
 
 istream& operator>>(istream& in, polynomial& poly) {
     int numTerms;
@@ -159,12 +186,15 @@ int main() {
     p2.addTerm(6, 3);
     p2.addTerm(10, 1);
     p2.addTerm(1, 2);
+    p1.computeValue(1);
     p3 = p1 * p2;
     cout << p3;
     p4 = p2-p1;
     cout << p4;
     cout << p1;
     cin >> p5;
+    cout << p5;
+    p5 = p1;
     cout << p5;
 
     return 0;

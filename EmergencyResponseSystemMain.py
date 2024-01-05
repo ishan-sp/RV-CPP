@@ -1,8 +1,17 @@
 from tkinter import *
+import requests
 import tkinter as tk
 import tkinter.font as font
 from tkinter import ttk
 from tkinter import Canvas
+import json
+from datetime import datetime
+
+ip_address = "http://192.168.18.20:8080"
+
+
+
+
 win = Tk()
 win.geometry("1920x1080")
 win.attributes('-fullscreen', True)
@@ -14,27 +23,70 @@ loc_var = StringVar()
 type_drop_client = StringVar()
 eid_var = StringVar()
 rid_var = StringVar()
+report_summary = []
 
 def clear_frame():
    for widgets in frame.winfo_children():
       widgets.destroy()
 
-def get_description():
+def get_description_type():
+    global report_summary
+    headers = {'Content-type': 'application/json'}
+    
     #fetches the description on the main client page
     description = description_var.get()
+    if description == "Please write a brief description to help us assist you":
+       description = "NA"
     print("Description entered:", description)
-    
-def get_client_optional():
-    location = loc_var.get()
-    print("Location entered:", location)
     emergency_type = type_drop_client.get()
     print("Type entered:", emergency_type)
+    current_time = datetime.now()
+    time_string = current_time.strftime("%Y-%m-%d %H:%M:%S")
+    data= {}
+    data["description"] = description
+    data["type"] = emergency_type
+    data["created-time"] = time_string
+    json_object = json.dumps(data)
+    url =  ip_address + "/emergency-request/raise"
+    response = requests.post(url, data=json_object, headers = headers)
+    if response.status_code == 200:
+       print('Raise Request successful! ', response.text)
+       parsed_data = json.loads(response.text)
+       id_assigned = parsed_data["id"]
+       desc_assigned = parsed_data["description"]
+       type_assigned = parsed_data["type"]
+       date_assigned = parsed_data["created-time"]
+       temp_list = [id_assigned, desc_assigned, type_assigned, date_assigned] 
+       report_summary.extend(temp_list)
+       
+    else:
+       print('Raise Request failed with status code:', response.status_code)
+    
+'''def get_client_optional():
+    location = loc_var.get()
+    print("Location entered:", locaton)
+    emergency_type = type_drop_client.get()
+    print("Type entered:", emergency_type)'''
 
 def get_allocation():
+   headers = {'Content-type': 'application/json'}
    eid = eid_var.get()
    print("EID entered:", eid)
    rid = rid_var.get()
    print("RID entered:", rid)
+   data= {}
+   data["id"] = eid
+   data["personnel-assigned"] = rid
+   json_object = json.dumps(data)
+   url =  ip_address + "/emergency-request/assign"
+   response = requests.post(url, data=json_object, headers = headers)
+   if response.status_code == 200:
+       print('Assignment successful! ', response.text)
+   else:
+       print('Assignment Request failed with status code:', response.status_code)
+      
+
+   
 
 def clear_textbox(tb):
     #passed text_box object as a variable in the parameter
@@ -48,30 +100,45 @@ def start_window():
     Button(frame, text = "Personnel", font=('Helvetica',30), bg = "#ADD8E6").place(x = 850, y = 450, height=60, width=200)
 
 def open_client():
+    type_drop_option = ["Other", "Domestic Violence", "Fire", "Medical", "Industrial Accident", "Security threats", "Infrastructure Accident", "Transport Accident", "Gas Leaks", "Search and Rescue"]
+
     Label(frame,text="Client Interface", font=('Helvetica',30)).place(x = 300, y = 0, height=80, width=700)
     Button(frame, text = "EXIT", font = ('Helvetica', 18), bg = "#BEBDB8", command=lambda: win.destroy()).place(x = 1050, y = 650, height = 50, width = 150)
-    Button(frame, text = "Back", font = ('Helvetica', 18), bg = "#BEBDB8", command=lambda: [clear_textbox(brf_desc), clear_frame(), start_window()]).place(x = 100, y = 650, height = 50, width = 150)
-    Button(frame, text="RAISE EMERGENCY", font=('Helvetica',70), bg = "#FF2800", command = lambda: [get_description(), clear_textbox(brf_desc), clear_frame(), open_client_completion()]).place(x = 0, y = 350, height = 200, width = 1300)
+    Button(frame, text = "Back", font = ('Helvetica', 18), bg = "#BEBDB8", command=lambda: [clear_textbox(brf_desc), clear_frame(), drop.destroy(), start_window()]).place(x = 100, y = 650, height = 50, width = 150)
+    Button(frame, text="RAISE EMERGENCY", font=('Helvetica',70), bg = "#FF2800", command = lambda: [get_description_type(), clear_textbox(brf_desc), drop.destroy(), clear_frame(), open_client_completion()]).place(x = 0, y = 350, height = 200, width = 1300)
     brf_desc = Entry(frame, font=('Helvetica', 20), textvariable = description_var, bg="#FFCCCC")
     brf_desc.insert(0, "Please write a brief description to help us assist you")
-    brf_desc.place(x=300, y=150, height=110, width=700)
+    brf_desc.place(x=80, y=150, height=110, width=700)
+    Label(frame, text = "Emergency Type", font = ('Helvetica', 15), bg = "#FFFDD0").place(x = 800, y = 180, height = 50, width = 250)
+
+    global type_drop_client
+    global drop_var
+    drop_var.set(type_drop_option[0])
+    def on_option_select(event):
+        global type_drop_client
+        type_drop_client.set(drop_var.get())
+    drop = OptionMenu(win, drop_var, *type_drop_option)
+    drop.place(x = 1070, y = 180, width = 180, height = 50)
+    drop.bind("<Configure>", on_option_select)
+    drop.config(bg="#FFFDD0")
     
 def open_client_completion():
-    type_drop_option = ["Other", "Domestic Violence", "Fire", "Medical", "Industrial Accident", "Security threats", "Infrastructure Accident", "Transport Accident", "Gas Leaks", "Search and Rescue"]
+    global report_summary
     #screen on report of emergency
     Label(frame,text="Your report has been forwarded to \nthe emergency operators\nHelp will arrive shortly", font=('Helvetica',45)).place(x = 150, y = 40, height=270, width=1000)
-    Label(frame,text="Meanwhile, here are some optional details you could provide", font=('Helvetica',17)).place(x = 80, y = 300, height = 100, width = 600)
-    Button(frame, text = "EXIT", font = ('Helvetica', 18), bg = "#BEBDB8", command=lambda: win.destroy()).place(x = 1050, y = 650, height = 50, width = 150)
-    Button(frame, text = "Finish", font = ('Helvetica', 18), bg = "#BEBDB8", command=lambda: [get_client_optional(), clear_textbox(location), drop.destroy(), clear_frame(), start_window()]).place(x = 800, y = 650, height = 50, width = 150)
-    Label(frame, text = "Location", font = ('Helvetica', 15), bg = "#FFFDD0").place(x = 80, y = 400, height = 50, width = 150)
-    Label(frame, text = "Emergency Type", font = ('Helvetica', 15), bg = "#FFFDD0").place(x = 750, y = 400, height = 50, width = 250)
-    Button(frame, text = "Delete Request", font = ('Helvetica', 18), bg = "#0A2472", fg="white", command=lambda: [drop.destroy(), clear_textbox(location), clear_frame(), start_window()]).place(x = 100, y = 650, height = 50, width = 600)
+    Label(frame,text=f"Here is the report summary:\n\nID number: {report_summary[0]}\nDescription: {report_summary[1]}\nEmergency type: {report_summary[2]}\nDate created: {report_summary[3]} ", font=('Helvetica',17)).place(x = 250, y = 280, height = 270, width = 800)
 
-    location = Entry(frame, font=('Helvetica', 15), textvariable = loc_var, bg="#FFFDD0")
-    location.insert(0, "")
-    location.place(x=230, y=400, height=50, width=250)
+    Button(frame, text = "EXIT", font = ('Helvetica', 18), bg = "#BEBDB8", command=lambda: win.destroy()).place(x = 1050, y = 650, height = 50, width = 150)
+    #Button(frame, text = "Finish", font = ('Helvetica', 18), bg = "#BEBDB8", command=lambda: [get_client_optional(), clear_textbox(location), drop.destroy(), clear_frame(), start_window()]).place(x = 800, y = 650, height = 50, width = 150)
+    #Label(frame, text = "Location", font = ('Helvetica', 15), bg = "#FFFDD0").place(x = 80, y = 400, height = 50, width = 150)
+    #Label(frame, text = "Emergency Type", font = ('Helvetica', 15), bg = "#FFFDD0").place(x = 750, y = 400, height = 50, width = 250)
+    Button(frame, text = "Finish", font = ('Helvetica', 18), bg = "#0A2472", fg="white", command=lambda: [clear_frame(), start_window()]).place(x = 100, y = 650, height = 50, width = 600)
+
+    #location = Entry(frame, font=('Helvetica', 15), textvariable = loc_var, bg="#FFFDD0")
+    #location.insert(0, "")
+    #location.place(x=230, y=400, height=50, width=250)
     
-    global type_drop_client
+    '''global type_drop_client
     global drop_var
     drop_var.set(type_drop_option[0])
     def on_option_select(event):
@@ -80,7 +147,7 @@ def open_client_completion():
     drop = OptionMenu(win, drop_var, *type_drop_option)
     drop.place(x = 1050, y = 400, width = 180, height = 50)
     drop.bind("<Configure>", on_option_select)
-    drop.config(bg="#FFFDD0")
+    drop.config(bg="#FFFDD0")'''
 
 def open_operator():
    Label(frame,text="LIVE FEED", font=('Helvetica',28)).place(x = 300, y = 0, height=80, width=200)
@@ -96,11 +163,11 @@ def open_operator():
    tv.column("# 2", anchor=CENTER, stretch=NO, width = 250)
    tv.heading("# 2", text="Description")
    tv.column("# 3", anchor=CENTER, stretch=NO, width = 200)
-   tv.heading("# 3", text="Location")
+   tv.heading("# 3", text="Date created")
    tv.column("# 4", anchor=CENTER, stretch=NO, width = 120)
    tv.heading("# 4", text="Type")
    #get the 2D list of object attributes
-   datav = [["12HYUENC983JCK", "Electrocution at St Mary's Lane", "St Mary's Lane", "Industrial Accident"]]
+   datav = [["12HYUENC983JCK", "Electrocution at St Mary's Lane", "2024-01-05 23:19:01", "Industrial Accident"]]
    for i in datav:
        tv.insert('', 'end', values = i)
    
